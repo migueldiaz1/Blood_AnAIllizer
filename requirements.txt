@@ -1,18 +1,12 @@
 # Dependencias de Flask (Backend)
 Flask
 Flask-CORS
-Flask-SQLAlchemy
-Flask-Migrate
-Flask-Bcrypt
-Flask-JWT-Extended
 gunicorn
 python-dotenv
-psycopg2-binary
 
 # Nuevas dependencias (Lógica de IA y PDF)
 pdfplumber
 pandas
-PyMuPDF
 google-genai==1.49.0
 reportlab
 

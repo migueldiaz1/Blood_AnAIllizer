@@ -1,8 +1,7 @@
 // Global variables
-let currentUser = null;
 let uploadedFiles = [];
 let analysisResults = [];
-let timelineData = [];
+let timelineData = []; // Mantenemos timelineData para la visualización temporal, pero no se guarda en BD.
 
 const API_BASE_URL = 'https://bloodanaillizer-production.up.railway.app/api';
 
@@ -13,12 +12,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeTypedText();
     initializeFileUpload();
     initializeScrollAnimations();
-    loadUserData();
+    // 🗑️ Eliminado: loadUserData() y la lógica de autenticación
+    
+    // Asocia la función processReports al botón 'Analyze Reports'
+    const analyzeButton = document.querySelector('button[onclick="processReports()"]');
+    if (analyzeButton) {
+        analyzeButton.addEventListener('click', processReports);
+    }
 });
 
-// Initialize animations
+// Initialize animations (mantener)
 function initializeAnimations() {
-    // Animate feature cards on scroll
     const featureCards = document.querySelectorAll('.feature-card');
     featureCards.forEach((card, index) => {
         card.style.animationDelay = `${index * 0.1}s`;
@@ -26,7 +30,7 @@ function initializeAnimations() {
     });
 }
 
-// Initialize floating particles
+// Initialize floating particles (mantener)
 function initializeParticles() {
     const container = document.getElementById('particles-container');
     const particleCount = 50;
@@ -41,7 +45,7 @@ function initializeParticles() {
     }
 }
 
-// Initialize typed text animation
+// Initialize typed text animation (mantener)
 function initializeTypedText() {
     const typed = new Typed('#typed-text', {
         strings: [
@@ -59,7 +63,7 @@ function initializeTypedText() {
     });
 }
 
-// Initialize file upload functionality
+// Initialize file upload functionality (mantener)
 function initializeFileUpload() {
     const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('file-input');
@@ -86,7 +90,7 @@ function initializeFileUpload() {
     });
 }
 
-// Handle file uploads
+// Handle file uploads (mantener)
 function handleFiles(files) {
     const uploadedFilesContainer = document.getElementById('uploaded-files');
     
@@ -112,13 +116,13 @@ function handleFiles(files) {
     });
 }
 
-// Remove uploaded file
+// Remove uploaded file (mantener)
 function removeFile(index) {
     uploadedFiles.splice(index, 1);
     refreshUploadedFiles();
 }
 
-// Refresh uploaded files display
+// Refresh uploaded files display (mantener)
 function refreshUploadedFiles() {
     const container = document.getElementById('uploaded-files');
     container.innerHTML = '';
@@ -140,15 +144,10 @@ function refreshUploadedFiles() {
     });
 }
 
-// Process reports
-// Reemplaza la función processReports()
+// Process reports (MODIFICADA: SIN TOKEN NI COMPROBACIÓN DE USUARIO)
 async function processReports() {
-    const token = localStorage.getItem('jwt_token');
-    if (!token) {
-        showNotification('Please log in to analyze reports.', 'warning');
-        return;
-    }
-
+    // 🗑️ Eliminado: Comprobación de token y login
+    
     if (uploadedFiles.length === 0) {
         showNotification('Please upload at least one PDF file', 'warning');
         return;
@@ -164,15 +163,12 @@ async function processReports() {
     
     try {
         const formData = new FormData();
-        // Nota: Tu backend solo procesa el primer archivo, así que enviamos solo el primero.
         formData.append('files', uploadedFiles[0]);
         formData.append('date', reportDate);
 
         const response = await fetch(`${API_BASE_URL}/analyze`, {
             method: 'POST',
-            headers: { 
-                'Authorization': `Bearer ${token}` // ¡Enviar el token!
-            },
+            // 🗑️ Eliminado: headers con 'Authorization': `Bearer ${token}`
             body: formData
         });
 
@@ -182,7 +178,7 @@ async function processReports() {
             analysisResults = data.results;
             displayResults(data.results);
             updateTimeline(data.results, data.report_date);
-            saveTimelineData(data.results, data.report_date); // ¡Guardar en la BD!
+            // 🗑️ Eliminado: saveTimelineData() - ya no guardamos en la DB
             showNotification('Reports analyzed successfully!', 'success');
         } else {
             showNotification(data.error || 'Error processing reports. Check your PDF format.', 'error');
@@ -196,7 +192,7 @@ async function processReports() {
     }
 }
 
-// Generate mock analysis results
+// Generate mock analysis results (mantener)
 function generateMockResults() {
     const biomarkers = [
         { test: 'Glucose', value: 95, unit: 'mg/dL', refLow: 70, refHigh: 100, status: 'Normal' },
@@ -212,7 +208,7 @@ function generateMockResults() {
     return biomarkers;
 }
 
-// Display analysis results
+// Display analysis results (mantener)
 function displayResults(results) {
     const container = document.getElementById('results-container');
     
@@ -278,7 +274,7 @@ function displayResults(results) {
     `;
 }
 
-// Calculate summary statistics
+// Calculate summary statistics (mantener)
 function calculateSummary(results) {
     const summary = {
         normal: results.filter(r => r.status === 'Normal').length,
@@ -289,7 +285,7 @@ function calculateSummary(results) {
     return summary;
 }
 
-// Get status color class
+// Get status color class (mantener)
 function getStatusColor(status) {
     switch (status) {
         case 'Normal':
@@ -304,7 +300,7 @@ function getStatusColor(status) {
     }
 }
 
-// Update timeline
+// Update timeline (mantener para VISUALIZACIÓN TEMPORAL)
 function updateTimeline(results, date) {
     const timelineItem = {
         date: date,
@@ -319,7 +315,7 @@ function updateTimeline(results, date) {
     updateChart();
 }
 
-// Display timeline
+// Display timeline (mantener para VISUALIZACIÓN TEMPORAL)
 function displayTimeline() {
     const container = document.getElementById('timeline-items');
     
@@ -353,7 +349,7 @@ function displayTimeline() {
     }, 100);
 }
 
-// Update chart
+// Update chart (mantener para VISUALIZACIÓN TEMPORAL)
 function updateChart() {
     const canvas = document.getElementById('timeline-chart');
     const ctx = canvas.getContext('2d');
@@ -414,7 +410,7 @@ function updateChart() {
     }
 }
 
-// View timeline details
+// View timeline details (mantener)
 function viewTimelineDetails(index) {
     const item = timelineData[index];
     displayResults(item.results);
@@ -422,11 +418,9 @@ function viewTimelineDetails(index) {
     scrollToSection('dashboard');
 }
 
-// Generate PDF report
-// Reemplaza la función generatePDF(type)
+// Generate PDF report (MODIFICADA: SIN TOKEN)
 async function generatePDF(type) {
-    const token = localStorage.getItem('jwt_token');
-    if (!token || analysisResults.length === 0) {
+    if (analysisResults.length === 0) {
         showNotification('Analyze a report first.', 'warning');
         return;
     }
@@ -438,13 +432,12 @@ async function generatePDF(type) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                // 🗑️ Eliminado: 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ type: type, results: analysisResults })
         });
 
         if (response.ok) {
-            // El PDF se devuelve como un Blob, necesitamos descargarlo
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -463,216 +456,23 @@ async function generatePDF(type) {
     }
 }
 
+// 🗑️ ELIMINADAS: Las siguientes funciones ya no son necesarias:
 
-// Reemplaza la función register()
-async function register() {
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const username = document.getElementById('reg-username').value;
-    const password = document.getElementById('reg-password').value;
-    
-    if (!name || !email || !username || !password) {
-        showNotification('Please fill in all fields', 'warning');
-        return;
-    }
+/*
+async function register() { ... }
+async function login() { ... }
+function updateUserInterface() { ... }
+function logout() { ... }
+function loadUserData() { ... }
+async function saveTimelineData(results, date) { ... }
+async function loadTimelineData() { ... }
+function openLoginModal() { ... }
+function closeLoginModal() { ... }
+function showRegisterForm() { ... }
+function showLoginForm() { ... }
+*/
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/users/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, username, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Guardar el token y la información del usuario
-            localStorage.setItem('jwt_token', data.access_token);
-            currentUser = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
-            closeLoginModal();
-            updateUserInterface();
-            showNotification('Registration successful! Logged in.', 'success');
-            loadTimelineData(); // Cargar datos del nuevo usuario
-        } else {
-            showNotification(data.error || 'Registration failed.', 'error');
-        }
-    } catch (error) {
-        showNotification('Error communicating with the server.', 'error');
-    }
-}
-
-// Reemplaza la función login()
-async function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
-    if (!username || !password) {
-        showNotification('Please enter username and password', 'warning');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/users/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Guardar el token y la información del usuario
-            localStorage.setItem('jwt_token', data.access_token);
-            currentUser = data.user;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
-            closeLoginModal();
-            updateUserInterface();
-            showNotification('Login successful!', 'success');
-            loadTimelineData(); // Cargar datos del usuario
-        } else {
-            showNotification(data.error || 'Invalid credentials.', 'error');
-        }
-    } catch (error) {
-        showNotification('Error communicating with the server.', 'error');
-    }
-}
-
-// Update user interface
-function updateUserInterface() {
-    const navButton = document.querySelector('nav button');
-    if (currentUser) {
-        navButton.innerHTML = `<i class="fas fa-user mr-2"></i>${currentUser.name}`;
-        navButton.onclick = logout;
-    } else {
-        navButton.innerHTML = 'Login';
-        navButton.onclick = openLoginModal;
-    }
-}
-
-// Logout functionality
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateUserInterface();
-    showNotification('Logged out successfully', 'success');
-}
-
-// Load user data
-function loadUserData() {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUserInterface();
-    }
-    
-    // Load timeline data
-    const savedTimeline = localStorage.getItem('timelineData');
-    if (savedTimeline) {
-        timelineData = JSON.parse(savedTimeline);
-        displayTimeline();
-        updateChart();
-    }
-}
-
-// Save timeline data
-// Reemplaza la función saveTimelineData(). Ahora recibe los datos a guardar.
-async function saveTimelineData(results, date) {
-    const token = localStorage.getItem('jwt_token');
-    if (!token || !results || !date) return;
-    
-    try {
-        const payload = {
-            date: date,
-            results: results
-        };
-
-        const response = await fetch(`${API_BASE_URL}/save-timeline`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // ¡Enviar el token!
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            // El timeline se guarda en la BD. La interfaz se actualiza con loadTimelineData.
-            // No hacemos nada más aquí, solo asegurarnos de que la interfaz se refresca.
-        } else {
-            console.error('Failed to save timeline to DB:', await response.json());
-        }
-    } catch (error) {
-        console.error('Connection error during timeline save:', error);
-    }
-}
-
-// Reescribimos loadUserData para llamar a la API y cargar datos
-function loadUserData() {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUserInterface();
-        loadTimelineData(); // Llamar a la API para cargar la línea de tiempo
-    }
-}
-
-
-// ¡NUEVA FUNCIÓN! Carga la línea de tiempo del usuario desde la BD
-async function loadTimelineData() {
-    const token = localStorage.getItem('jwt_token');
-    if (!token) return;
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/timeline`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            // Transformar las fechas del formato ISO de la BD al formato que usa el frontend
-            timelineData = data.timeline.map(item => ({
-                ...item,
-                // Usar solo la parte de la fecha (YYYY-MM-DD)
-                date: new Date(item.date).toISOString().split('T')[0]
-            }));
-            displayTimeline();
-            updateChart();
-        } else if (response.status === 401) {
-            // Si el token expiró, cerrar sesión automáticamente
-            logout();
-        }
-    } catch (error) {
-        console.error('Error loading timeline:', error);
-    }
-}
-
-// Modal functions
-function openLoginModal() {
-    document.getElementById('login-modal').classList.add('active');
-}
-
-function closeLoginModal() {
-    document.getElementById('login-modal').classList.remove('active');
-}
-
-function showRegisterForm() {
-    document.getElementById('login-form').classList.add('hidden');
-    document.getElementById('register-form').classList.remove('hidden');
-}
-
-function showLoginForm() {
-    document.getElementById('register-form').classList.add('hidden');
-    document.getElementById('login-form').classList.remove('hidden');
-}
-
-// Utility functions
+// Utility functions (mantener)
 function scrollToSection(sectionId) {
     const section = document.getElementById(sectionId);
     section.scrollIntoView({ behavior: 'smooth' });
@@ -688,11 +488,9 @@ function showLoading(show) {
 }
 
 function showNotification(message, type) {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
     
-    // Set notification style based on type
     switch (type) {
         case 'success':
             notification.classList.add('bg-green-500', 'text-white');
@@ -716,12 +514,10 @@ function showNotification(message, type) {
     
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.classList.remove('translate-x-full');
     }, 100);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.classList.add('translate-x-full');
         setTimeout(() => {
@@ -743,7 +539,7 @@ function getNotificationIcon(type) {
     }
 }
 
-// Initialize scroll animations
+// Initialize scroll animations (mantener)
 function initializeScrollAnimations() {
     const observerOptions = {
         threshold: 0.1,
@@ -769,7 +565,7 @@ function initializeScrollAnimations() {
     });
 }
 
-// Biomarker select change handler
+// Biomarker select change handler (mantener)
 document.addEventListener('DOMContentLoaded', function() {
     const biomarkerSelect = document.getElementById('biomarker-select');
     if (biomarkerSelect) {
@@ -777,17 +573,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Close modal when clicking outside
+// Close modal when clicking outside (MODIFICADA: QUITAR REFERENCIA A MODALES)
+/*
 document.addEventListener('click', function(e) {
     const modal = document.getElementById('login-modal');
     if (e.target === modal) {
         closeLoginModal();
     }
 });
+*/
 
-// Keyboard shortcuts
+// Keyboard shortcuts (MODIFICADA: QUITAR REFERENCIA A MODALES)
+/*
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeLoginModal();
     }
 });
+*/
