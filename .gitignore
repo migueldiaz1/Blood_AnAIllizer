@@ -12,3 +12,6 @@ __pycache__/
 
 # Archivos de sistema
 .DS_Store
+
+*.pdf
+prueba.py

@@ -31,9 +31,59 @@ def _lab_results_to_text(df):
 
 def _generate_prompt(content, tipo_prompt):
     if tipo_prompt == "doctor":
-        return f"Actúa como un médico. Analiza estos resultados y haz un breve resumen profesional de 3 párrafos. {content}"
+        return f"""
+You are a licensed medical doctor specializing in clinical laboratory interpretation.
+Below are the patient's blood test results:
+
+{content}
+
+Please write a concise medical report that follows these guidelines:
+
+1. Summarize all normal findings briefly.
+2. Describe in more detail the parameters marked as “Near” or “High”.
+3. If any abnormal or borderline values could be associated with physiological changes
+   or potential medical conditions, mention them as possible interpretations —
+   but make it clear that these are hypotheses, not diagnoses.
+4. If all values are within normal ranges, state that explicitly.
+5. Use clear, professional medical language in English.
+6. Organize the report into 2–4 coherent paragraphs.
+7. End with this disclaimer:
+   “This report is for informational purposes only and does not replace professional medical evaluation.”
+"""
+    
     if tipo_prompt == "paciente":
-        return f"Actúa como un asesor de salud. Analiza estos resultados y da un consejo amigable de 3 párrafos. {content}"
+        return f"""
+You are a friendly and empathetic health advisor. Your goal is to help a person
+understand their lab results in a simple, clear, and positive way.
+Use everyday language and a relatable tone.
+
+Here are the person's lab results:
+
+{content}
+
+Please write a summary for the patient following these guidelines:
+
+1.  Simple Language: Explain the results as if you were talking to a friend.
+    Avoid medical jargon completely.
+2.  Normal Results: Start by congratulating the person for the results
+    that are within the normal range. Briefly and simply explain
+    what it means to have those values at a healthy level.
+3.  Areas for Improvement: For each value marked as "High",
+    "Low", or "Near", do the following:
+    a. Explain very simply what that parameter measures (e.g., "LDL cholesterol
+       is like the 'sticky fat transporter' in your blood").
+    b. Without being alarming, mention why it's a good idea to pay attention to that value.
+    c. Offer 2-3 practical and actionable lifestyle recommendations to help
+       improve that value. They should be easy tips to incorporate into daily life.
+4.  Positive and Motivational Tone: The goal is to empower the person to
+    take small actions to improve their health, not to scare them. Use phrases like
+    "A small improvement here could be...", "Your body will thank you if...".
+5.  Clear Structure: Organize the report into short, easy-to-read paragraphs of about 4 lines each. The formatting must be simple, containing only explanatory text without bolding, symbols, or lists.
+6.  Final Disclaimer: You must end with the following text:
+    "Remember, this is an interpretation to help you understand your results.
+    It does not replace a consultation with your doctor, who knows your history
+    and will give you the best recommendations. Always talk to your doctor!"
+ """
     return ""
 
 def generar_reporte_ia(df, tipo_prompt):
