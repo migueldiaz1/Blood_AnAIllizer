@@ -4,9 +4,9 @@ Flask-CORS==4.0.0
 Werkzeug==2.3.7
 
 # PDF Processing
-pdfplumber==0.10.2
-PyMuPDF==1.23.8
-PyPDF2==3.0.1
+pdfplumber
+PyMuPDF
+PyPDF2
 reportlab==4.0.6
 
 # Data Analysis
