@@ -51,6 +51,6 @@ def create_medical_report_pdf(output_filename, report_text):
 
     for block in blocks:
         if block.strip():
-            Story.append(Paragraph(block.strip(), styles["Normal_JustMified"]))
+            Story.append(Paragraph(block.strip(), styles["Normal_Justified"]))
             
     doc.build(Story)
