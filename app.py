@@ -21,16 +21,18 @@ CORS(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'un-secreto-de-respaldo')
 
 def calculate_summary_from_df(df):
-    """ Función de resumen (corregida para JSON) """
-    status_counts = df['Status'].value_counts()
+    # Asegúrate de usar la columna 'status' (minúscula) que acabamos de renombrar
+    status_counts = df['status'].value_counts()
     return {
         'normal': int(status_counts.get('Normal', 0)),
+        'near': int(status_counts.get('Near', 0)),
+        'abnormal': int(status_counts.get('Low', 0) + status_counts.get('High', 0)),
         'total': int(len(df))
     }
 
 @app.route('/api/analyze', methods=['POST'])
+#@jwt_required() # <--- ¡RECUERDA QUITAR EL '#' CUANDO TERMINES DE PROBAR!
 def analyze_reports():
-    """ Endpoint principal: Recibe un PDF y devuelve el análisis JSON """
     try:
         if 'files' not in request.files:
             return jsonify({'error': 'No files provided'}), 400
@@ -43,25 +45,33 @@ def analyze_reports():
             pdf_path = os.path.join(tmp_dir, secure_filename(file.filename))
             file.save(pdf_path)
             
-            # 1. Extraer
             lineas = extraer_texto_de_pdf(pdf_path) 
             
-            # 2. Parsear
             df = parsear_lineas_a_dataframe(lineas)
             
-            # 3. Clasificar
             if not df.empty:
                 df = clasificar_resultados(df)
             else:
                 return jsonify({'error': 'No data could be extracted from this PDF.'}), 400
         
-        # 4. Convertir a JSON (con la corrección de int64)
+        # --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
+        # Renombramos las columnas del DataFrame para que coincidan con el JS
+        df = df.rename(columns={
+            'Test': 'test',
+            'Value': 'value',
+            'Unit': 'unit',
+            'Ref Low': 'refLow',
+            'Ref High': 'refHigh',
+            'Status': 'status'
+        })
+        
+        # Convertimos a JSON (usando el fix de int64)
         results_json = json.loads(df.to_json(orient='records'))
         
         return jsonify({
             'success': True,
             'results': results_json,
-            'summary': calculate_summary_from_df(df),
+            'summary': calculate_summary_from_df(df), # Pasamos el df renombrado
             'report_date': report_date_str
         })
         
