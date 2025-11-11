@@ -141,7 +141,14 @@ function refreshUploadedFiles() {
 }
 
 // Process reports
+// Reemplaza la función processReports()
 async function processReports() {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        showNotification('Please log in to analyze reports.', 'warning');
+        return;
+    }
+
     if (uploadedFiles.length === 0) {
         showNotification('Please upload at least one PDF file', 'warning');
         return;
@@ -156,40 +163,38 @@ async function processReports() {
     showLoading(true);
     
     try {
-        // 2. Crear FormData para enviar los archivos
         const formData = new FormData();
-        uploadedFiles.forEach(file => {
-            formData.append('files', file);
-        });
-        formData.append('date', document.getElementById('report-date').value);
+        // Nota: Tu backend solo procesa el primer archivo, así que enviamos solo el primero.
+        formData.append('files', uploadedFiles[0]);
+        formData.append('date', reportDate);
 
-        // 3. Llamar a tu API real
         const response = await fetch(`${API_BASE_URL}/analyze`, {
             method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}` // ¡Enviar el token!
+            },
             body: formData
         });
 
-        if (!response.ok) {
-            throw new Error('Error from API');
-        }
-
         const data = await response.json();
 
-        // 4. Usar los resultados de la API, no los mocks
-        analysisResults = data.results;
-        displayResults(data.results);
-        updateTimeline(data.results, data.report_date);
-
-        showNotification('Reports analyzed successfully!', 'success');
-
+        if (response.ok && data.success) {
+            analysisResults = data.results;
+            displayResults(data.results);
+            updateTimeline(data.results, data.report_date);
+            saveTimelineData(data.results, data.report_date); // ¡Guardar en la BD!
+            showNotification('Reports analyzed successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Error processing reports. Check your PDF format.', 'error');
+        }
+        
     } catch (error) {
-        console.error('Error processing reports:', error);
-        showNotification('Error processing reports. Please try again.', 'error');
+        console.error('API Error:', error);
+        showNotification('Connection error. Check console for details.', 'error');
     } finally {
         showLoading(false);
     }
 }
-
 
 // Generate mock analysis results
 function generateMockResults() {
@@ -418,31 +423,49 @@ function viewTimelineDetails(index) {
 }
 
 // Generate PDF report
+// Reemplaza la función generatePDF(type)
 async function generatePDF(type) {
-    showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} report generated successfully!`, 'success');
-}
-
-// Login functionality
-function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
-    if (!username || !password) {
-        showNotification('Please enter username and password', 'warning');
+    const token = localStorage.getItem('jwt_token');
+    if (!token || analysisResults.length === 0) {
+        showNotification('Analyze a report first.', 'warning');
         return;
     }
     
-    // Simulate login
-    currentUser = { username, name: username };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    
-    closeLoginModal();
-    updateUserInterface();
-    showNotification('Login successful!', 'success');
+    showNotification(`Generating ${type} report...`, 'info');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/generate-pdf`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ type: type, results: analysisResults })
+        });
+
+        if (response.ok) {
+            // El PDF se devuelve como un Blob, necesitamos descargarlo
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `${type}_report.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} report downloaded successfully!`, 'success');
+        } else {
+            showNotification(`Error generating ${type} report.`, 'error');
+        }
+    } catch (error) {
+        showNotification('Connection error during PDF generation.', 'error');
+    }
 }
 
-// Register functionality
-function register() {
+
+// Reemplaza la función register()
+async function register() {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const username = document.getElementById('reg-username').value;
@@ -452,14 +475,69 @@ function register() {
         showNotification('Please fill in all fields', 'warning');
         return;
     }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Guardar el token y la información del usuario
+            localStorage.setItem('jwt_token', data.access_token);
+            currentUser = data.user;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            closeLoginModal();
+            updateUserInterface();
+            showNotification('Registration successful! Logged in.', 'success');
+            loadTimelineData(); // Cargar datos del nuevo usuario
+        } else {
+            showNotification(data.error || 'Registration failed.', 'error');
+        }
+    } catch (error) {
+        showNotification('Error communicating with the server.', 'error');
+    }
+}
+
+// Reemplaza la función login()
+async function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
     
-    // Simulate registration
-    currentUser = { username, name, email };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    
-    closeLoginModal();
-    updateUserInterface();
-    showNotification('Registration successful!', 'success');
+    if (!username || !password) {
+        showNotification('Please enter username and password', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Guardar el token y la información del usuario
+            localStorage.setItem('jwt_token', data.access_token);
+            currentUser = data.user;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            closeLoginModal();
+            updateUserInterface();
+            showNotification('Login successful!', 'success');
+            loadTimelineData(); // Cargar datos del usuario
+        } else {
+            showNotification(data.error || 'Invalid credentials.', 'error');
+        }
+    } catch (error) {
+        showNotification('Error communicating with the server.', 'error');
+    }
 }
 
 // Update user interface
@@ -500,8 +578,79 @@ function loadUserData() {
 }
 
 // Save timeline data
-function saveTimelineData() {
-    localStorage.setItem('timelineData', JSON.stringify(timelineData));
+// Reemplaza la función saveTimelineData(). Ahora recibe los datos a guardar.
+async function saveTimelineData(results, date) {
+    const token = localStorage.getItem('jwt_token');
+    if (!token || !results || !date) return;
+    
+    try {
+        const payload = {
+            date: date,
+            results: results
+        };
+
+        const response = await fetch(`${API_BASE_URL}/save-timeline`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // ¡Enviar el token!
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            // El timeline se guarda en la BD. La interfaz se actualiza con loadTimelineData.
+            // No hacemos nada más aquí, solo asegurarnos de que la interfaz se refresca.
+        } else {
+            console.error('Failed to save timeline to DB:', await response.json());
+        }
+    } catch (error) {
+        console.error('Connection error during timeline save:', error);
+    }
+}
+
+// Reescribimos loadUserData para llamar a la API y cargar datos
+function loadUserData() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateUserInterface();
+        loadTimelineData(); // Llamar a la API para cargar la línea de tiempo
+    }
+}
+
+
+// ¡NUEVA FUNCIÓN! Carga la línea de tiempo del usuario desde la BD
+async function loadTimelineData() {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/timeline`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Transformar las fechas del formato ISO de la BD al formato que usa el frontend
+            timelineData = data.timeline.map(item => ({
+                ...item,
+                // Usar solo la parte de la fecha (YYYY-MM-DD)
+                date: new Date(item.date).toISOString().split('T')[0]
+            }));
+            displayTimeline();
+            updateChart();
+        } else if (response.status === 401) {
+            // Si el token expiró, cerrar sesión automáticamente
+            logout();
+        }
+    } catch (error) {
+        console.error('Error loading timeline:', error);
+    }
 }
 
 // Modal functions
