@@ -10,7 +10,8 @@
     "dev": "python api.py & python -m http.server 8000",
     "build": "echo 'Build process not required for static files'",
     "test": "echo 'Tests not implemented yet'",
-    "lint": "echo 'Linting not configured'"
+    "lint": "echo 'Linting not configured'",
+    "railway-build": "pip install -r requirements.txt"
   },
   "keywords": [
     "healthcare",
