@@ -29,6 +29,7 @@ def _lab_results_to_text(df):
         lines.append(line)
     return "Here are the patient's laboratory results:\n\n" + "\n".join(lines)
 
+
 def _generate_prompt(content, tipo_prompt):
     if tipo_prompt == "doctor":
         return f"""
@@ -52,39 +53,25 @@ Please write a concise medical report that follows these guidelines:
 """
     
     if tipo_prompt == "paciente":
+        # This is a simpler, clearer prompt to reduce confusion and hallucination.
         return f"""
-You are a friendly and empathetic health advisor. Your goal is to help a person
-understand their lab results in a simple, clear, and positive way.
-Use everyday language and a relatable tone.
+You are a friendly and empathetic health advisor. 
+Your goal is to help a person understand their lab results in simple, clear, and positive language.
 
 Here are the person's lab results:
-
 {content}
 
-Please write a summary for the patient following these guidelines:
-
-1.  Simple Language: Explain the results as if you were talking to a friend.
-    Avoid medical jargon completely.
-2.  Normal Results: Start by congratulating the person for the results
-    that are within the normal range. Briefly and simply explain
-    what it means to have those values at a healthy level.
-3.  Areas for Improvement: For each value marked as "High",
-    "Low", or "Near", do the following:
-    a. Explain very simply what that parameter measures (e.g., "LDL cholesterol
-       is like the 'sticky fat transporter' in your blood").
-    b. Without being alarming, mention why it's a good idea to pay attention to that value.
-    c. Offer 2-3 practical and actionable lifestyle recommendations to help
-       improve that value. They should be easy tips to incorporate into daily life.
-4.  Positive and Motivational Tone: The goal is to empower the person to
-    take small actions to improve their health, not to scare them. Use phrases like
-    "A small improvement here could be...", "Your body will thank you if...".
-5.  Clear Structure: Organize the report into short, easy-to-read paragraphs of about 4 lines each. The formatting must be simple, containing only explanatory text without bolding, symbols, or lists.
-6.  Final Disclaimer: You must end with the following text:
+Please write a simple summary for the patient following these rules:
+1.  Start by celebrating the results that are "Normal".
+2.  For any result marked "High", "Low", or "Near":
+    a. Explain what it measures in simple terms (no medical jargon).
+    b. Give 2-3 practical, actionable lifestyle tips (like diet or exercise) for each of those results.
+3.  Keep the tone positive and empowering, not alarming.
+4.  IMPORTANT: You must end with this exact disclaimer:
     "Remember, this is an interpretation to help you understand your results.
     It does not replace a consultation with your doctor, who knows your history
     and will give you the best recommendations. Always talk to your doctor!"
- """
-    return ""
+"""
 
 def generar_reporte_ia(df, tipo_prompt):
     # CORRECCIÓN: Usamos la sintaxis del 'prueba.py'
