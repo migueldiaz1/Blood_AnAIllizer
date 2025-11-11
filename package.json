@@ -1,0 +1,42 @@
+{
+  "name": "medilab-analytics",
+  "version": "1.0.0",
+  "description": "Advanced Clinical Report Analysis Platform with AI-powered insights",
+  "main": "index.html",
+  "scripts": {
+    "start": "python start.py",
+    "backend": "python api.py",
+    "install-deps": "pip install -r requirements.txt",
+    "dev": "python api.py & python -m http.server 8000",
+    "build": "echo 'Build process not required for static files'",
+    "test": "echo 'Tests not implemented yet'",
+    "lint": "echo 'Linting not configured'"
+  },
+  "keywords": [
+    "healthcare",
+    "medical",
+    "analytics",
+    "ai",
+    "pdf-processing",
+    "biomarkers",
+    "clinical-reports",
+    "health-tracking",
+    "data-visualization"
+  ],
+  "author": "MediLab Analytics Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/medilab-analytics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/medilab-analytics/issues"
+  },
+  "homepage": "https://medilab-analytics.com",
+  "engines": {
+    "node": ">=14.0.0",
+    "python": ">=3.8.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

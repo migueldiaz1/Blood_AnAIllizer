@@ -1,0 +1,53 @@
+# Core Flask dependencies
+Flask==2.3.3
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+
+# PDF Processing
+pdfplumber==0.10.2
+PyMuPDF==1.23.8
+PyPDF2==3.0.1
+reportlab==4.0.6
+
+# Data Analysis
+pandas
+numpy
+
+# AI/ML (Google Gemini)
+google-generativeai==0.3.2
+
+# Environment Configuration
+python-dotenv==1.0.0
+
+# Data Visualization (for backend charts)
+seaborn
+matplotlib
+
+# File Upload Handling
+python-magic==0.4.27
+
+# Security
+bcrypt==4.0.1
+
+# Date/Time Handling
+python-dateutil==2.8.2
+
+# JSON Web Tokens for authentication
+PyJWT==2.8.0
+
+# HTTP requests
+requests==2.31.0
+
+# Development tools (optional)
+pytest==7.4.2
+black==23.9.1
+flake8==6.1.0
+
+# Para la Base de Datos
+Flask-SQLAlchemy==3.1.1
+psycopg2-binary==2.9.9  # Driver para PostgreSQL
+Flask-Migrate==4.0.7    # Para manejar cambios en la BD (migraciones)
+
+# Para Autenticación y Seguridad
+Flask-Bcrypt==1.0.1
+Flask-JWT-Extended==4.5.3 # Un wrapper de PyJWT más completo
