@@ -1,6 +1,6 @@
 import os
 import re
-import google.genai as genai # <-- CORRECCIÓN: Importación revertida a la original
+import google.genai as genai 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_JUSTIFY
@@ -12,14 +12,12 @@ def _configurar_cliente_gemini():
     if not API_KEY:
         raise ValueError("No se encontró la GEMINI_API_KEY.")
     
-    # CORRECCIÓN: Usamos la sintaxis del 'prueba.py' que sí funciona
     os.environ["GEMINI_API_KEY"] = API_KEY 
     return genai.Client()
 
 def _lab_results_to_text(df):
     lines = []
     for _, row in df.iterrows():
-        # Usamos las claves en minúscula/camelCase que app.py define
         row_dict = row.to_dict()
         line = (
             f"{row_dict['test']}: {row_dict['value']} {row_dict['unit']} "
@@ -53,7 +51,6 @@ Please write a concise medical report that follows these guidelines:
 """
     
     if tipo_prompt == "patient":
-        # This is a simpler, clearer prompt to reduce confusion and hallucination.
         return f"""
 You are a friendly and empathetic health advisor. 
 Your goal is to help a person understand their lab results in simple, clear, and positive language.
@@ -74,13 +71,12 @@ Please write a simple summary for the patient following these rules:
 """
 
 def generar_reporte_ia(df, tipo_prompt):
-    # CORRECCIÓN: Usamos la sintaxis del 'prueba.py'
     client = _configurar_cliente_gemini()
     content = _lab_results_to_text(df)
     prompt = _generate_prompt(content, tipo_prompt)
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash", # Asumiendo que esta es la versión correcta
+        model="gemini-2.5-flash", 
         contents=prompt
     )
     return response.text

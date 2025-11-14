@@ -1,18 +1,15 @@
-// Global variables
 let uploadedFiles = [];
 let analysisResults = [];
-let timelineData = []; // Se mantiene para la visualización temporal
+let timelineData = []; 
 
 const API_BASE_URL = 'https://bloodanaillizer-production.up.railway.app/api';
 
-// Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeAnimations();
     initializeParticles();
     initializeTypedText();
     initializeFileUpload();
     initializeScrollAnimations();
-    // No hay loadUserData()
 });
 
 // Initialize animations
@@ -138,7 +135,7 @@ function refreshUploadedFiles() {
     });
 }
 
-// Process reports (MODIFICADO: SIN TOKEN)
+// Process reports 
 async function processReports() {
     if (uploadedFiles.length === 0) {
         showNotification('Please upload at least one PDF file', 'warning');
@@ -160,7 +157,6 @@ async function processReports() {
 
         const response = await fetch(`${API_BASE_URL}/analyze`, {
             method: 'POST',
-            // No hay cabecera 'Authorization'
             body: formData
         });
 
@@ -275,7 +271,7 @@ function getStatusColor(status) {
     }
 }
 
-// Update timeline (para visualización temporal)
+// Update timeline 
 function updateTimeline(results, date) {
     const timelineItem = {
         date: date,
@@ -290,7 +286,7 @@ function updateTimeline(results, date) {
     updateChart();
 }
 
-// Display timeline (para visualización temporal)
+// Display timeline
 function displayTimeline() {
     const container = document.getElementById('timeline-items');
     
@@ -324,10 +320,10 @@ function displayTimeline() {
     }, 100);
 }
 
-// Update chart (para visualización temporal)
+// Update chart
 function updateChart() {
     const canvas = document.getElementById('timeline-chart');
-    if (!canvas) return; // Asegurarse de que el canvas existe
+    if (!canvas) return; 
     const ctx = canvas.getContext('2d');
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -389,7 +385,7 @@ function viewTimelineDetails(index) {
     scrollToSection('dashboard');
 }
 
-// Generate PDF report (MODIFICADO: SIN TOKEN)
+// Generate PDF report 
 async function generatePDF(type) {
     if (analysisResults.length === 0) {
         showNotification('Analyze a report first.', 'warning');
@@ -403,7 +399,7 @@ async function generatePDF(type) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // No hay 'Authorization'
+                
             },
             body: JSON.stringify({ type: type, results: analysisResults })
         });
